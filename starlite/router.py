@@ -93,7 +93,37 @@ class Router:
         value: Union[Controller, BaseRouteHandler, "Router"],
     ) -> ItemsView[str, Union[WebsocketRouteHandler, ASGIRoute, Dict[HttpMethod, HTTPRouteHandler]]]:
         """
-        Maps route handlers to http methods
+        For HTTP, maps the path to a mapping of HTTP method to handler.
+
+        For `websocket` and `asgi` maps path to the handler.
+
+            >>> from starlite import get, websocket, asgi
+            >>> @get()
+            ... def my_http_handler() -> None:
+            ...   ...
+            ...
+            >>> @websocket(path="/socket")
+            ... def my_websocket_handler(socket: ...) -> None:
+            ...   ...
+            ...
+            >>> @asgi(path="/my-asgi-app")
+            ... def my_asgi_app(scope: ..., receive: ..., send: ...) -> None:
+            ...   ...
+            ...
+            >>> Router.map_route_handlers(my_http_handler)
+            dict_items([('/', {'GET': <starlite.handlers.http.get object at 0x7fadb803c6d0>})])
+            >>> Router.map_route_handlers(my_websocket_handler)
+            dict_items([('/socket', <starlite.handlers.websocket.WebsocketRouteHandler object at 0x7fadba359bc0>)])
+            >>> Router.map_route_handlers(my_asgi_app)
+            dict_items([('/my-asgi-app', <starlite.handlers.asgi.ASGIRouteHandler object at 0x7fadb822a340>)])
+
+        Parameters
+        ----------
+        value : Controller | BaseRouteHandler | Router
+
+        Returns
+        -------
+        ItemsView[str, WebsocketRouteHandler | ASGIRoute | dict[HttpMethod, HTTPRouteHandler]]
         """
         handlers_map: Dict[str, Any] = {}
         if isinstance(value, BaseRouteHandler):
