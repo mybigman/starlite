@@ -140,6 +140,20 @@ class Starlite(Router):
             self.template_engine = None
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        ASGI entrypoint.
+
+        See: https://asgi.readthedocs.io/en/latest/introduction.html#how-does-asgi-work
+
+        Parameters
+        ----------
+        scope : MutableMapping[str, Any]
+            Dict containing details about the specific connection.
+        receive : Callable[[], Awaitable[Message]]
+            An asynchronous callable that lets the application receive messages from the client.
+        send : Callable[[Message], Awaitable[None]]
+            An asynchronous callable that lets the application send event messages to the client.
+        """
         scope["app"] = self
         if scope["type"] == "lifespan":
             await self.asgi_router.lifespan(scope, receive, send)
