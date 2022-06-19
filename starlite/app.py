@@ -272,12 +272,31 @@ class Starlite(Router):
         cors_config: Optional[CORSConfig],
     ) -> ASGIApp:
         """
-        Builds the middleware stack by passing middlewares in a specific order
+        Builds the middleware stack so that it is ordered like:
+
+        `CORSMiddleware` -> `TrustedHostMiddleware` -> `user_middleware` -> `ASGIApp`.
+
+        `CORSMiddleware` and `TrustedHostMiddleware` are only injected if they are provided.
+
+        `user_middleware` is added to the stack in the same order that it is provided.
+
+        Parameters
+        ----------
+        user_middleware : list[Middleware, type[BaseHTTPMiddleware], type[MiddlewareProtocol]]
+            Added to stack in provided order and executed after any allowed hosts or CORS
+            middlewares.
+        allowed_hosts : list[str] | None
+            A list of hosts, causes an instance of `TrustedHostMiddleware` to be added to the stack
+            and executed _before_ any `user_middleware`.
+        cors_config : CORSConfig | None
+            If provided, an instance of `CORSMiddleware` is put on the top of the stack.
+
+        Returns
+        -------
+        ASGIApp
         """
         current_app: ASGIApp = self.asgi_router
-        # last added middleware will be on the top of stack and it will therefore be called first.
-        # we therefore need to reverse the middlewares to keep the call order according to
-        # the middlewares' list provided by the user
+        # reverse the middlewares to keep the call order according to the order provided by the user
         for middleware in reversed(user_middleware):
             if isinstance(middleware, Middleware):
                 current_app = middleware.cls(app=current_app, **middleware.options)
