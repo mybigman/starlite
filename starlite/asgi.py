@@ -30,7 +30,16 @@ class StarliteASGIRouter(StarletteRouter):
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
-        The main entry point to the Router class.
+        Called as the final ASGI app in the middleware stack.
+
+        Parameters
+        ----------
+        scope : MutableMapping[str, Any]
+            Dict containing details about the specific connection.
+        receive : Callable[[], Awaitable[Message]]
+            An asynchronous callable that lets the application receive messages from the client.
+        send : Callable[[Message], Awaitable[None]]
+            An asynchronous callable that lets the application send event messages to the client.
         """
         scope_type = scope["type"]
         path_params: List[str] = []
